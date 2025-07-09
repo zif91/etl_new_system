@@ -46,7 +46,7 @@
 ### 1. Клонирование репозитория
 
 ```bash
-git clone <repository-url>
+git clone git@github.com:zif91/etl_new_system.git
 cd etl_new_system
 ```
 
