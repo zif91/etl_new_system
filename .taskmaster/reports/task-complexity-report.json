@@ -1,0 +1,93 @@
+{
+	"meta": {
+		"generatedAt": "2025-07-07T15:02:50.484Z",
+		"tasksAnalyzed": 10,
+		"totalTasks": 10,
+		"analysisCount": 10,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": false
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Database Schema Setup",
+			"complexityScore": 7,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down the database schema setup into logical phases: table structure design, relationship implementation, performance optimization, migration scripting, and initialization procedures. Each subtask should focus on a specific aspect of database design and implementation.",
+			"reasoning": "High complexity due to multiple interconnected tables, foreign key relationships, indexing requirements, and migration scripts. The task involves both design and implementation phases with dependencies between components."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Campaign Name Parser Implementation",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Decompose the parser implementation into core parsing logic, platform-specific mappings, campaign type determination, goal mapping, edge case handling, and comprehensive validation. Each subtask should address a specific parsing challenge or functionality.",
+			"reasoning": "Very high complexity due to multiple platform integrations, complex mapping dictionaries, edge case handling, and the need for robust parsing logic that handles various naming conventions and data formats."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Meta API Integration",
+			"complexityScore": 8,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Structure the Meta API integration into authentication setup, campaign data retrieval, insights fetching, rate limiting implementation, error handling, data transformation, and database persistence. Each subtask should handle a specific aspect of the API integration workflow.",
+			"reasoning": "High complexity due to OAuth authentication, rate limiting requirements, multiple API endpoints, data transformation needs, and integration with campaign parser. Requires robust error handling and retry mechanisms."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Google Analytics 4 Integration",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break down GA4 integration into authentication setup, report request configuration, data retrieval implementation, response processing, transaction ID extraction, and database storage. Focus on GA4-specific requirements and data structures.",
+			"reasoning": "Moderate to high complexity due to GA4's specific API structure, authentication requirements, and the need for transaction ID extraction for deduplication. Less complex than Meta API but still requires careful handling of API responses."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Google Ads API Integration",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Organize Google Ads integration into client initialization, campaign data retrieval, performance metrics fetching, campaign name parsing integration, data transformation, and database persistence. Each subtask should address specific Google Ads API requirements.",
+			"reasoning": "Moderate to high complexity due to Google Ads Query Language (GAQL), authentication requirements, and integration with campaign parser. Similar complexity to GA4 but with different API patterns and data structures."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Promo Code Integration with Google Sheets",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Structure the Google Sheets integration into authentication setup, data retrieval from spreadsheets, data validation and transformation, and database storage implementation. Focus on handling various spreadsheet formats and data validation.",
+			"reasoning": "Moderate complexity due to Google Sheets API authentication and data validation requirements. Less complex than advertising APIs but requires careful handling of spreadsheet data formats and validation rules."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "AppsFlyer API Integration",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down AppsFlyer integration into API authentication setup, data retrieval implementation, response processing, data transformation, and database storage implementation. Focus on mobile analytics specific requirements and data structures.",
+			"reasoning": "Moderate complexity due to API authentication, mobile analytics data structures, and transformation requirements. Less complex than major advertising platforms but still requires proper error handling and data processing."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Order Deduplication System",
+			"complexityScore": 6,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Structure the deduplication system into transaction ID matching logic, attribution source assignment, deduplication algorithm implementation, and logging/statistics tracking. Focus on accuracy and performance of the deduplication process.",
+			"reasoning": "Moderate complexity due to the need for accurate transaction matching, attribution logic, and statistical tracking. Critical for data accuracy but with well-defined algorithmic requirements."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Apache Airflow ETL Pipeline",
+			"complexityScore": 8,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Decompose the Airflow pipeline into DAG structure design, individual task operators creation, dependency configuration, scheduling setup, error handling implementation, retry logic configuration, alerting configuration, and monitoring setup. Each subtask should address a specific aspect of pipeline orchestration.",
+			"reasoning": "High complexity due to orchestration of multiple data sources, complex dependencies, error handling requirements, scheduling constraints, and monitoring needs. Requires deep understanding of Airflow concepts and workflow management."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Media Plan Integration and Comparison",
+			"complexityScore": 7,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Structure the media plan comparison into matching criteria logic implementation, variance calculation engine development, campaign-to-plan mapping system creation, performance comparison algorithms development, and ETL pipeline integration. Focus on accuracy and flexibility of the comparison system.",
+			"reasoning": "Moderate to high complexity due to multi-criteria matching algorithms, variance calculations, and integration with existing pipeline. Requires sophisticated logic for campaign matching and performance analysis."
+		}
+	]
+}

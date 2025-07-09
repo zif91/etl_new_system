@@ -1,0 +1,4 @@
+gspread>=5.10.0
+google-auth>=2.16.0
+google-api-python-client>=2.70.0
+psycopg2-binary>=2.9.5

@@ -1,0 +1,769 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Database Schema Setup",
+        "description": "Create PostgreSQL database schema for the advertising analytics system including tables for campaigns, daily metrics, media plans, and promo orders.",
+        "details": "Implement the following tables according to the PRD:\n1. `campaigns` - Store campaign information with parsed structure\n2. `daily_metrics` - Store daily advertising metrics\n3. `media_plan` - Store planned budget and metrics\n4. `promo_orders` - Store orders with promo codes\n\nEnsure proper indexing for performance optimization. Use the exact schema structure provided in the PRD section 2.4.1. Include foreign key relationships between tables and appropriate constraints. Create migration scripts for database initialization.",
+        "testStrategy": "1. Verify all tables are created with correct columns and data types\n2. Test foreign key constraints by inserting and deleting related records\n3. Test indexes by running EXPLAIN on common query patterns\n4. Validate unique constraints work as expected\n5. Ensure timestamp fields auto-populate correctly",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Core Table Structures",
+            "description": "Create detailed table schemas for all core entities including column definitions, data types, primary keys, and basic constraints. Document table relationships and entity-relationship diagrams.",
+            "dependencies": [],
+            "details": "Define tables for users, products, orders, categories, and other core entities. Specify column names, data types (VARCHAR, INT, DATETIME, etc.), null constraints, default values, and primary key definitions. Create ER diagrams showing table relationships.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Foreign Key Relationships and Constraints",
+            "description": "Add foreign key constraints between related tables, implement referential integrity rules, and set up cascade options for data consistency.",
+            "dependencies": [
+              1
+            ],
+            "details": "Define foreign key relationships between tables (e.g., orders to users, order_items to products). Set up ON DELETE and ON UPDATE cascade rules. Add check constraints for data validation and business rules enforcement.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create Performance Indexes",
+            "description": "Design and implement database indexes on frequently queried columns and foreign keys to optimize query performance and ensure efficient data retrieval.",
+            "dependencies": [
+              2
+            ],
+            "details": "Create indexes on primary keys, foreign keys, and commonly searched columns. Implement composite indexes for multi-column queries. Add unique indexes where appropriate and consider partial indexes for large tables.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Write Database Migration Scripts",
+            "description": "Develop migration scripts for database schema creation, updates, and rollback procedures. Include version control and sequential migration management.",
+            "dependencies": [
+              3
+            ],
+            "details": "Create SQL migration files with proper versioning (001_create_users_table.sql, 002_add_foreign_keys.sql, etc.). Include both UP and DOWN migration scripts for rollback capability. Add migration tracking table and validation scripts.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Set Up Database Initialization Procedures",
+            "description": "Create database initialization scripts, seed data procedures, and automated setup processes for development, testing, and production environments.",
+            "dependencies": [
+              4
+            ],
+            "details": "Develop initialization scripts that create database, run migrations, and populate seed data. Create environment-specific configuration files. Set up automated database setup procedures and health check scripts for deployment.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Campaign Name Parser Implementation",
+        "description": "Develop a robust parser for campaign names that extracts structured data from campaign naming conventions across different platforms.",
+        "details": "Implement the `parse_campaign_name` function that parses campaign names according to the structure: `{Platform}|{Channel}|{City}|{Restaurant}|{AudienceType}|{Additional}`.\n\nImplement the `determine_campaign_type_and_goal` function that maps parsed campaign data to campaign types and goals based on the mapping rules in the PRD.\n\nCreate the CAMPAIGN_MAPPING dictionary with all necessary mappings for:\n- Channel to campaign type\n- Goal mapping based on campaign type and patterns\n- Platform to source mapping\n- City to country mapping\n- Restaurant name standardization\n\nEnsure the parser handles edge cases like missing fields, different separators, and extra whitespace.",
+        "testStrategy": "1. Unit test with the example campaign names provided in the PRD\n2. Test edge cases (missing fields, extra whitespace, etc.)\n3. Verify all mappings work correctly\n4. Test with real campaign data from each platform\n5. Benchmark performance with large datasets",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Core Parsing Logic",
+            "description": "Develop the fundamental parsing engine that extracts campaign information from various input formats and structures",
+            "dependencies": [],
+            "details": "Create the base parsing framework that can handle different input formats (JSON, XML, CSV, etc.), implement tokenization and pattern recognition for campaign data extraction, and establish the core data structures for parsed campaign information",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Create Platform Mapping Dictionary",
+            "description": "Build comprehensive mapping dictionaries for different advertising platforms and their naming conventions",
+            "dependencies": [
+              1
+            ],
+            "details": "Develop mapping tables for major platforms (Google Ads, Facebook, LinkedIn, Twitter, etc.), create standardized field mappings, implement platform-specific naming convention handlers, and establish lookup tables for campaign attributes",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement Campaign Type Determination",
+            "description": "Create logic to automatically identify and categorize campaign types based on parsed data",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Develop classification algorithms to determine campaign types (search, display, video, social, etc.), implement pattern matching for campaign naming conventions, create decision trees for type identification, and establish confidence scoring for type determination",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Develop Goal Mapping Implementation",
+            "description": "Build the system to map campaign objectives and goals across different platforms to standardized formats",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Create goal standardization mappings (awareness, consideration, conversion, etc.), implement objective translation logic between platforms, develop KPI mapping functionality, and establish goal hierarchy and priority systems",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement Edge Case Handling",
+            "description": "Develop comprehensive error handling and edge case management for unusual or malformed campaign data",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Create handlers for malformed data, implement fallback parsing strategies, develop data sanitization routines, handle missing or incomplete campaign information, and create recovery mechanisms for parsing failures",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Build Validation Functions",
+            "description": "Create comprehensive validation and testing framework to ensure parsing accuracy and reliability",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "details": "Develop unit tests for all parsing components, create integration tests for end-to-end parsing workflows, implement data quality validation checks, build performance benchmarking tools, and establish regression testing for platform updates",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Meta API Integration",
+        "description": "Implement data import from Meta Marketing API to collect advertising metrics from Facebook and Instagram campaigns.",
+        "details": "Use the `facebook-business` Python SDK to connect to Meta Marketing API. Implement the `import_meta_data` function that:\n1. Initializes the Facebook API with proper credentials\n2. Retrieves campaign data with required fields (id, name, status, objective, etc.)\n3. Fetches insights data with metrics (impressions, clicks, spend, etc.)\n4. Parses campaign names using the campaign parser\n5. Determines campaign type and goal\n6. Transforms and saves data to the database\n\nHandle API rate limits with proper backoff and retry logic. Implement error handling for API failures. Use the exact field structure specified in the PRD section 2.1.1.",
+        "testStrategy": "1. Test API connection with mock credentials\n2. Verify all required fields are retrieved\n3. Test campaign parsing with real campaign data\n4. Validate data transformation logic\n5. Test error handling with simulated API failures\n6. Verify rate limit handling",
+        "priority": "high",
+        "dependencies": [
+          1,
+          2
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Authentication Setup",
+            "description": "Implement Meta API authentication system including access token management, token refresh mechanisms, and secure credential storage",
+            "dependencies": [],
+            "details": "Set up OAuth 2.0 flow, implement token validation, create secure storage for API credentials, and establish token refresh logic to maintain continuous API access",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Campaign Data Retrieval",
+            "description": "Develop functionality to fetch campaign data from Meta API including campaign details, targeting information, and budget data",
+            "dependencies": [
+              1
+            ],
+            "details": "Create API endpoints to retrieve campaign information, implement pagination handling, and establish data filtering mechanisms for efficient campaign data collection",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Insights Data Fetching",
+            "description": "Build system to retrieve performance insights and metrics data from Meta API including impressions, clicks, conversions, and cost data",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement insights API calls with proper date range handling, metric selection, and breakdown dimensions to gather comprehensive performance data",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Rate Limiting Implementation",
+            "description": "Implement rate limiting mechanisms to comply with Meta API usage limits and prevent API throttling",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Create rate limiting logic with exponential backoff, request queuing system, and monitoring of API usage to stay within Meta's rate limits",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Error Handling",
+            "description": "Develop comprehensive error handling system for API failures, network issues, and data validation errors",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Implement retry mechanisms, error classification, logging system, and graceful degradation strategies for various API error scenarios",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Data Transformation",
+            "description": "Create data transformation layer to normalize and structure Meta API responses for consistent internal data format",
+            "dependencies": [
+              2,
+              3,
+              5
+            ],
+            "details": "Build data mapping functions, implement data validation, create standardized data models, and ensure compatibility with campaign parser requirements",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Database Persistence",
+            "description": "Implement database storage system for Meta API data including campaign information, insights data, and API response caching",
+            "dependencies": [
+              6
+            ],
+            "details": "Create database schema, implement data insertion and update logic, establish data retention policies, and create indexing for efficient data retrieval",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Google Analytics 4 Integration",
+        "description": "Implement data import from Google Analytics 4 API to collect website and e-commerce metrics.",
+        "details": "Use the `google-analytics-data` Python library to connect to GA4 Data API. Implement the `import_ga4_data` function that:\n1. Initializes the GA4 client with proper credentials\n2. Creates a RunReportRequest with required dimensions (date, sessionSourceMedium, sessionCampaignName, transactionId)\n3. Requests metrics (sessions, conversions, purchaseRevenue)\n4. Processes the response and transforms data to the required format\n5. Saves data to the database\n\nImplement proper error handling and retry logic. Use the exact field structure specified in the PRD section 2.1.2.",
+        "testStrategy": "1. Test API connection with mock credentials\n2. Verify all required dimensions and metrics are retrieved\n3. Test data transformation logic\n4. Validate transaction ID extraction for later deduplication\n5. Test error handling with simulated API failures",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Authentication Setup",
+            "description": "Configure Google Analytics 4 API authentication using service account credentials or OAuth2 flow",
+            "dependencies": [],
+            "details": "Set up authentication mechanism for GA4 API access, including service account key management, credential validation, and token refresh handling. Configure proper scopes and permissions for analytics data access.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Report Request Configuration",
+            "description": "Define and configure GA4 report request parameters including dimensions, metrics, and filters",
+            "dependencies": [
+              1
+            ],
+            "details": "Structure GA4 API requests with proper dimension and metric combinations, date ranges, filtering criteria, and pagination parameters. Handle GA4-specific requirements like property ID configuration and report type selection.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Data Retrieval Implementation",
+            "description": "Implement the core data fetching logic with proper error handling and retry mechanisms",
+            "dependencies": [
+              2
+            ],
+            "details": "Build robust data retrieval system that handles GA4 API calls, manages rate limiting, implements exponential backoff for retries, and processes API responses. Include proper logging and monitoring for API interactions.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Response Processing",
+            "description": "Process and transform GA4 API responses into structured data format",
+            "dependencies": [
+              3
+            ],
+            "details": "Parse GA4 API response structure, handle nested data objects, convert data types appropriately, and transform the response into a consistent format suitable for further processing and storage.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Transaction ID Extraction",
+            "description": "Extract and validate transaction IDs from GA4 data for deduplication purposes",
+            "dependencies": [
+              4
+            ],
+            "details": "Implement logic to identify and extract transaction IDs from GA4 response data, validate transaction ID format and completeness, and prepare deduplication mechanisms to handle duplicate transactions across different data pulls.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Database Storage",
+            "description": "Store processed GA4 data in database with proper indexing and deduplication",
+            "dependencies": [
+              5
+            ],
+            "details": "Design and implement database storage solution for GA4 data, including table schema optimization, indexing strategy for transaction IDs, upsert operations for deduplication, and data integrity validation before storage.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Google Ads API Integration",
+        "description": "Implement data import from Google Ads API to collect advertising metrics from Google Search and Display campaigns.",
+        "details": "Use the `google-ads` Python library to connect to Google Ads API. Implement the `import_google_ads_data` function that:\n1. Initializes the Google Ads client with proper credentials\n2. Retrieves campaign data with required fields\n3. Fetches performance metrics (impressions, clicks, cost, etc.)\n4. Parses campaign names using the campaign parser\n5. Determines campaign type and goal\n6. Transforms and saves data to the database\n\nHandle API rate limits and implement error handling. Use the exact field structure specified in the PRD section 2.1.3.",
+        "testStrategy": "1. Test API connection with mock credentials\n2. Verify all required fields are retrieved\n3. Test campaign parsing with real campaign data\n4. Validate data transformation logic\n5. Test error handling with simulated API failures\n6. Verify rate limit handling",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          2
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Google Ads Client Initialization",
+            "description": "Set up Google Ads API client with authentication, configuration management, and connection handling including OAuth2 setup and API credentials management.",
+            "dependencies": [],
+            "details": "Initialize Google Ads API client with proper authentication flow, handle API credentials securely, implement connection pooling, and set up basic error handling for authentication failures. Include rate limiting configuration and API version management.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Campaign Data Retrieval",
+            "description": "Implement campaign data fetching from Google Ads API with proper query structure, filtering, and pagination handling.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create functions to retrieve campaign information using Google Ads Query Language (GAQL), implement proper filtering for active campaigns, handle pagination for large datasets, and include error handling for API timeouts and quota limits.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Performance Metrics Fetching",
+            "description": "Develop performance metrics retrieval system to fetch key advertising metrics like impressions, clicks, conversions, and cost data.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement metrics fetching with proper date range handling, support for multiple metric types (impressions, clicks, CTR, CPC, conversions), handle metric aggregation levels, and implement caching for frequently requested metrics to optimize API usage.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Campaign Name Parsing Integration",
+            "description": "Integrate campaign name parsing functionality to extract structured information from campaign names and standardize naming conventions.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement campaign name parsing logic to extract metadata from campaign names, handle various naming conventions, create mapping between parsed data and campaign information, and include validation for parsed campaign data consistency.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Data Transformation",
+            "description": "Transform raw Google Ads API data into standardized format for consistent processing and storage, including metric calculations and data normalization.",
+            "dependencies": [
+              2,
+              3,
+              4
+            ],
+            "details": "Create data transformation pipeline to normalize Google Ads data structure, calculate derived metrics, handle data type conversions, implement data validation rules, and ensure consistency with existing data models. Include error handling for malformed data.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Database Persistence",
+            "description": "Implement database storage system for transformed Google Ads data with proper schema design, indexing, and data integrity management.",
+            "dependencies": [
+              5
+            ],
+            "details": "Design and implement database schema for Google Ads data storage, create efficient indexing strategy, implement upsert operations for data updates, handle data versioning, and include data integrity checks. Implement batch processing for large datasets and error recovery mechanisms.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Promo Code Integration with Google Sheets",
+        "description": "Implement data import from Google Sheets API to collect promo code usage data and order information.",
+        "details": "Use the `gspread` or `google-api-python-client` library to connect to Google Sheets API. Implement the `import_promo_codes` function that:\n1. Authenticates with the Google Sheets API\n2. Retrieves promo code data from the specified spreadsheet\n3. Transforms data to the required format (promo_code, order_id, transaction_id, etc.)\n4. Saves data to the promo_orders table\n\nImplement error handling for API failures and data validation. Use the exact field structure specified in the PRD section 2.1.4.",
+        "testStrategy": "1. Test API connection with mock credentials\n2. Verify all required fields are retrieved\n3. Test data transformation logic\n4. Validate transaction ID extraction for later deduplication\n5. Test error handling with simulated API failures\n6. Test with various spreadsheet formats",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Google Sheets Authentication Setup",
+            "description": "Implement Google Sheets API authentication using service account credentials or OAuth2 flow to securely access spreadsheet data",
+            "dependencies": [],
+            "details": "Set up Google Cloud project, enable Sheets API, create service account credentials, implement authentication flow with proper error handling for token refresh and access validation",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Data Retrieval from Spreadsheets",
+            "description": "Develop functionality to read promo code data from specified Google Sheets ranges with batch processing capabilities",
+            "dependencies": [
+              1
+            ],
+            "details": "Create methods to fetch data from specific sheet ranges, handle pagination for large datasets, implement retry logic for API rate limits, and support multiple sheet formats",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Data Validation and Transformation",
+            "description": "Implement comprehensive validation rules and data transformation logic for promo code entries including deduplication",
+            "dependencies": [
+              2
+            ],
+            "details": "Validate promo code format, expiration dates, discount values, usage limits, transform data to match database schema, implement deduplication logic to prevent duplicate entries, and handle data type conversions",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Database Storage Implementation",
+            "description": "Create database operations to store validated promo code data with proper error handling and transaction management",
+            "dependencies": [
+              3
+            ],
+            "details": "Design database schema for promo codes, implement insert/update operations with conflict resolution, add logging for import results, create rollback mechanisms for failed imports, and generate import summary reports",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "AppsFlyer API Integration",
+        "description": "Implement data import from AppsFlyer Reporting API to collect mobile app installation and usage metrics.",
+        "details": "Use the `requests` library to connect to AppsFlyer Reporting API. Implement the `import_appsflyer_data` function that:\n1. Authenticates with the AppsFlyer API using the API token\n2. Retrieves app installation and usage data\n3. Transforms data to the required format (date, media_source, campaign, installs, etc.)\n4. Saves data to the database\n\nImplement error handling for API failures and rate limiting. Use the exact field structure specified in the PRD section 2.1.5.",
+        "testStrategy": "1. Test API connection with mock credentials\n2. Verify all required fields are retrieved\n3. Test data transformation logic\n4. Test error handling with simulated API failures\n5. Verify rate limit handling",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "API Authentication Setup",
+            "description": "Implement AppsFlyer API authentication using API tokens and configure secure credential management for accessing mobile analytics data",
+            "dependencies": [],
+            "details": "Set up AppsFlyer API authentication by obtaining and configuring API tokens, implementing secure credential storage, handling token refresh mechanisms, and establishing proper authentication headers for API requests. Include error handling for authentication failures and token expiration scenarios.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Data Retrieval Implementation",
+            "description": "Develop API client to retrieve mobile app analytics data from AppsFlyer endpoints with proper request handling and rate limiting",
+            "dependencies": [
+              1
+            ],
+            "details": "Create API client functions to fetch data from AppsFlyer endpoints including install data, in-app events, cohort data, and attribution reports. Implement proper HTTP request handling, rate limiting compliance, pagination support, and retry mechanisms for failed requests.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Response Processing",
+            "description": "Build response validation and error handling system to process AppsFlyer API responses and manage various response formats",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement comprehensive response processing including JSON parsing, response validation, error code handling, data quality checks, and logging mechanisms. Handle different response formats, API errors, and edge cases like empty responses or malformed data.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Data Transformation",
+            "description": "Create data transformation pipeline to normalize and structure AppsFlyer analytics data for consistent storage and analysis",
+            "dependencies": [
+              3
+            ],
+            "details": "Develop data transformation functions to normalize AppsFlyer data formats, standardize field names and data types, aggregate metrics as needed, handle timezone conversions, and ensure data consistency. Include data validation and cleansing processes.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Database Storage Implementation",
+            "description": "Implement database storage solution for transformed AppsFlyer data with proper indexing and data management strategies",
+            "dependencies": [
+              4
+            ],
+            "details": "Design and implement database schema for storing AppsFlyer analytics data, create efficient insert/update operations, implement proper indexing for query performance, handle data deduplication, and establish data retention policies. Include backup and recovery mechanisms.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Order Deduplication System",
+        "description": "Implement a system to deduplicate orders between Google Analytics 4 and promo code data to prevent double-counting.",
+        "details": "Implement the `deduplicate_orders` function that:\n1. Takes GA4 transaction data and promo code data as input\n2. Creates a set of transaction IDs from promo code data\n3. Iterates through GA4 transactions and marks those found in promo data as promo orders\n4. Sets the attribution source appropriately (promo_code or utm_attribution)\n5. Returns the deduplicated data\n\nIntegrate this function into the ETL pipeline after both GA4 and promo code data are imported. Implement logging for deduplication statistics. Use the algorithm specified in the PRD section 2.2.1.",
+        "testStrategy": "1. Unit test with mock GA4 and promo code data\n2. Test edge cases (no duplicates, all duplicates, etc.)\n3. Verify attribution source is set correctly\n4. Test with real data samples\n5. Validate deduplication statistics",
+        "priority": "high",
+        "dependencies": [
+          4,
+          6
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Transaction ID Matching Logic",
+            "description": "Implement robust transaction ID matching logic to identify duplicate transactions across different data sources and time periods",
+            "dependencies": [],
+            "details": "Design and implement algorithms to match transaction IDs considering variations in format, timing discrepancies, and potential ID conflicts. Include fuzzy matching capabilities for near-duplicate IDs and handle edge cases like partial IDs or corrupted data.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Attribution Source Assignment",
+            "description": "Develop attribution source assignment system to properly credit transactions to their originating channels or touchpoints",
+            "dependencies": [
+              1
+            ],
+            "details": "Create logic to assign attribution sources based on transaction metadata, user journey data, and predefined attribution models. Handle multi-touch attribution scenarios and establish priority rules for conflicting source claims.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Deduplication Algorithm Implementation",
+            "description": "Build the core deduplication algorithm that processes matched transactions and applies attribution rules to prevent double-counting",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Implement the main deduplication engine that combines transaction matching results with attribution assignments. Include configurable rules for handling different types of duplicates, time-based deduplication windows, and conflict resolution strategies.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Logging and Statistics Tracking",
+            "description": "Implement comprehensive logging and statistics tracking system to monitor deduplication performance and accuracy",
+            "dependencies": [
+              3
+            ],
+            "details": "Create detailed logging mechanisms to track deduplication decisions, maintain statistics on duplicate detection rates, and provide audit trails for attribution assignments. Include performance metrics, error tracking, and reporting capabilities for monitoring system effectiveness.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Apache Airflow ETL Pipeline",
+        "description": "Implement Apache Airflow DAGs for orchestrating the ETL processes to import, transform, and load data from all sources.",
+        "details": "Create an Airflow DAG named `advertising_data_pipeline` that:\n1. Runs daily at 6:00 AM\n2. Includes tasks for importing data from all sources (Meta, GA4, Google Ads, Google Sheets, AppsFlyer)\n3. Implements the deduplication task after data imports\n4. Calculates metrics and performs final data transformations\n5. Handles task dependencies correctly\n\nImplement proper error handling, retries, and alerting. Use the DAG structure specified in the PRD section 2.5.1.",
+        "testStrategy": "1. Test DAG syntax and structure\n2. Verify task dependencies are correct\n3. Test with mock operators to validate workflow\n4. Validate scheduling and execution timing\n5. Test error handling and retry logic\n6. Verify email alerts on failures",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "DAG Structure Design",
+            "description": "Design the overall DAG architecture including DAG definition, metadata configuration, and task flow structure for the Airflow pipeline",
+            "dependencies": [],
+            "details": "Define DAG parameters (dag_id, schedule_interval, start_date, catchup), create DAG object, establish task hierarchy and flow patterns, define default arguments and configurations",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Individual Task Operators Creation",
+            "description": "Create and configure individual task operators for each step in the ETL pipeline using appropriate Airflow operators",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement PythonOperator, BashOperator, SQLOperator, or custom operators as needed, define task-specific parameters, configure task resources and execution environment",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Dependency Configuration",
+            "description": "Configure task dependencies and relationships to ensure proper execution order and data flow between tasks",
+            "dependencies": [
+              2
+            ],
+            "details": "Set up upstream and downstream dependencies using >> and << operators, configure branching logic, implement conditional dependencies and task groups",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Scheduling Setup",
+            "description": "Configure DAG scheduling parameters including cron expressions, time zones, and execution policies",
+            "dependencies": [
+              1
+            ],
+            "details": "Define schedule_interval using cron expressions or timedelta, configure timezone settings, set up catchup behavior, implement SLA configurations",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Error Handling Implementation",
+            "description": "Implement comprehensive error handling mechanisms for task failures and pipeline exceptions",
+            "dependencies": [
+              2
+            ],
+            "details": "Configure on_failure_callback functions, implement custom exception handling, set up task failure notifications, define failure recovery procedures",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Retry Logic Configuration",
+            "description": "Configure retry mechanisms for failed tasks including retry counts, delays, and exponential backoff strategies",
+            "dependencies": [
+              5
+            ],
+            "details": "Set retries parameter for tasks, configure retry_delay and retry_exponential_backoff, implement custom retry logic for specific failure types",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Alerting Configuration",
+            "description": "Set up alerting and notification systems for pipeline failures, successes, and SLA breaches",
+            "dependencies": [
+              5
+            ],
+            "details": "Configure email alerts, Slack notifications, or webhook integrations, set up on_success_callback and on_failure_callback, implement SLA miss alerts",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 8,
+            "title": "Monitoring Setup",
+            "description": "Implement comprehensive monitoring and logging capabilities for pipeline observability and performance tracking",
+            "dependencies": [
+              6,
+              7
+            ],
+            "details": "Set up Airflow UI monitoring, configure custom metrics and logging, implement health checks, set up performance monitoring and resource utilization tracking",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Media Plan Integration and Comparison",
+        "description": "Implement functionality to compare actual advertising performance with the media plan to track budget and performance variances.",
+        "details": "Implement the `match_campaign_to_media_plan` function that:\n1. Takes campaign data and media plans as input\n2. Matches campaigns to media plan entries based on multiple criteria (restaurant, country, campaign type, goal, source, month)\n3. Calculates variances in budget and performance metrics\n4. Returns matching media plan ID and variance data\n\nIntegrate this function into the ETL pipeline after all metrics are calculated. Create a separate task in the Airflow DAG for plan-fact comparison. Use the function structure specified in the PRD section 2.6.",
+        "testStrategy": "1. Unit test with mock campaign and media plan data\n2. Test various matching scenarios (exact match, partial match, no match)\n3. Verify variance calculations are correct\n4. Test with real data samples\n5. Validate edge cases (missing media plan, multiple matches)",
+        "priority": "medium",
+        "dependencies": [
+          9
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Matching Criteria Logic",
+            "description": "Develop comprehensive matching algorithms to align media campaigns with planned activities based on multiple criteria including date ranges, channels, demographics, geography, and budget categories",
+            "dependencies": [],
+            "details": "Create flexible matching rules engine that handles fuzzy matching, hierarchical matching (brand/product level), and configurable tolerance levels for date and budget matching. Include validation for edge cases like overlapping campaigns and partial matches.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Build Variance Calculation Engine",
+            "description": "Implement sophisticated variance calculation logic for budget, impressions, clicks, conversions, and other KPIs with support for percentage and absolute variance thresholds",
+            "dependencies": [
+              1
+            ],
+            "details": "Develop calculation engine supporting multiple variance types (budget vs actual spend, planned vs delivered impressions, target vs actual CPM/CPC). Include statistical significance testing and confidence intervals for performance metrics.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create Campaign-to-Plan Mapping System",
+            "description": "Build automated mapping system that links executed campaigns to planned activities with manual override capabilities and conflict resolution mechanisms",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement mapping algorithms using campaign metadata, naming conventions, and business rules. Include mapping confidence scores, duplicate detection, and manual mapping interface for complex scenarios.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Develop Performance Comparison Algorithms",
+            "description": "Create advanced comparison algorithms that analyze performance across multiple dimensions including time periods, channels, audiences, and creative variations",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Build multi-dimensional analysis engine supporting period-over-period comparisons, channel performance benchmarking, audience segment analysis, and creative performance evaluation. Include statistical testing for significance and trend analysis.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Integrate with ETL Pipeline",
+            "description": "Seamlessly integrate plan-fact analysis components with existing ETL pipeline to ensure data consistency, error handling, and automated processing workflows",
+            "dependencies": [
+              4
+            ],
+            "details": "Implement ETL integration points for data ingestion, transformation, and output. Include error handling, data quality checks, retry mechanisms, and monitoring capabilities. Ensure scalable processing for large datasets and real-time updates.",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-07T14:54:09.537Z",
+      "updated": "2025-07-09T15:49:53.702Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

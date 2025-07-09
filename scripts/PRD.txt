@@ -1,0 +1,1049 @@
+# PRD: Система аналитики рекламных кампаний
+
+## 1. Обзор продукта
+
+### 1.1 Цель проекта
+Создание единой системы аналитики рекламных кампаний для агрегации данных из различных источников (Meta API, Google Analytics 4, Google Ads, Google Sheets, AppsFlyer) с возможностью сравнения с медиапланом и построения дашбордов.
+
+### 1.2 Основные задачи
+- Автоматизация сбора данных из различных рекламных платформ
+- Унификация и нормализация данных
+- Сопоставление UTM-меток и промокодов с типами кампаний
+- Дедупликация заказов между источниками
+- Построение дашбордов для анализа эффективности
+- Сравнение план-факт с медиапланом
+
+### 1.3 Стек технологий (OpenSource)
+- **Backend**: Python (FastAPI/Django)
+- **База данных**: PostgreSQL
+- **ETL**: Apache Airflow
+- **Визуализация**: Apache Superset / Grafana
+- **Кеширование**: Redis
+- **Контейнеризация**: Docker
+
+## 2. Функциональные требования
+
+### 2.1 Импорт данных
+
+#### 2.1.1 Meta API
+**Источник данных**: Meta Marketing API
+**Библиотека**: `facebook-business` (официальная Python SDK)
+
+**Импортируемые метрики**:
+- Impressions (показы)
+- Clicks (клики)
+- Spend (расходы)
+- Reach (охват)
+- Frequency (частота)
+- CPM, CPC, CTR
+- Video views (просмотры видео)
+- Engagement (вовлеченность)
+- Conversions (конверсии)
+
+**Группировка**:
+- По кампаниям
+- По группам объявлений
+- По объявлениям
+- По дням
+- По UTM-меткам
+
+**Структура данных**:
+```python
+{
+    "date": "2025-02-26",
+    "campaign_id": "120217276243170508",
+    "campaign_name": "Instagram | CPM | Almaty | Bella | Interests | День Рождения",
+    "parsed_campaign": {
+        "platform": "Instagram",
+        "channel": "CPM", 
+        "city": "Almaty",
+        "restaurant": "Bella",
+        "audience_type": "Interests",
+        "additional": "День Рождения"
+    },
+    "account_id": "564758959363164",
+    "objective": "OUTCOME_AWARENESS",
+    "status": "ACTIVE",
+    "daily_budget": 1500,
+    "adset_id": "987654321",
+    "adset_name": "Интересы_25-45_Алматы",
+    "ad_id": "111222333",
+    "impressions": 10000,
+    "clicks": 150,
+    "spend": 500.00,
+    "reach": 8500,
+    "cpm": 50.00,
+    "cpc": 3.33,
+    "ctr": 1.50,
+    "campaign_type": "Awareness",  # Определяется из channel (CPM)
+    "campaign_goal": "Охват/Узнаваемость",
+    "source": "Мета",
+    "restaurant": "Белла",
+    "city": "Алматы"
+**Примеры работы парсера с реальными данными**:
+```python
+# Тестирование парсера
+test_campaigns = [
+    "Instagram | CPM | Almaty | Bella | Interests | День Рождения",
+    "Facebook | CPС | Almaty | Bella | Interests | Промокод недели Margo1", 
+    "Facebook | CPС | Almaty | Bella | Interests | Доставка",
+    "Search|CPC|Astana|Tanuki|No_Brand",
+    "Network|CPM|Tashkent|Kaspiika|Remarketing"
+]
+
+for campaign_name in test_campaigns:
+    parsed = parse_campaign_name(campaign_name)
+    meta = determine_campaign_type_and_goal(parsed, "OUTCOME_SALES")
+    
+    print(f"Campaign: {campaign_name}")
+    print(f"Parsed: {parsed}")
+    print(f"Type: {meta['type']}, Goal: {meta['goal']}")
+    print(f"Restaurant: {meta['restaurant']}, Country: {meta['country']}")
+    print("---")
+
+# Ожидаемый результат:
+# Campaign: Instagram | CPM | Almaty | Bella | Interests | День Рождения
+# Type: Awareness, Goal: Охват/Узнаваемость
+# Restaurant: Белла, Country: Казахстан
+
+# Campaign: Facebook | CPС | Almaty | Bella | Interests | Промокод недели Margo1
+# Type: Performance, Goal: Заказы  
+# Restaurant: Белла, Country: Казахстан
+```
+
+#### 2.1.2 Google Analytics 4
+**Источник данных**: Google Analytics Data API (GA4)
+**Библиотека**: `google-analytics-data`
+
+**Импортируемые метрики**:
+- Sessions (сессии)
+- Users (пользователи)
+- Page views (просмотры страниц)
+- Conversions (конверсии)
+- Ecommerce purchases (покупки)
+- Revenue (доход)
+- Transaction ID
+
+**Группировка**:
+- По источникам трафика
+- По кампаниям
+- По дням
+- По UTM-меткам
+- По промокодам
+
+**Структура данных**:
+```python
+{
+    "date": "2025-01-01",
+    "utm_source": "google",
+    "utm_medium": "cpc",
+    "utm_campaign": "tanuki_kz_search",
+    "utm_content": "keywords",
+    "sessions": 500,
+    "users": 450,
+    "conversions": 25,
+    "purchase_revenue": 7500.00,
+    "transactions": 25,
+    "transaction_ids": ["TXN001", "TXN002", "..."]
+}
+```
+
+#### 2.1.3 Google Ads API
+**Источник данных**: Google Ads API
+**Библиотека**: `google-ads`
+
+**Импортируемые метрики**:
+- Impressions (показы)
+- Clicks (клики)
+- Cost (расходы)
+- Conversions (конверсии)
+- Conversion value (ценность конверсий)
+- Quality Score (показатель качества)
+
+**Группировка**:
+- По кампаниям
+- По группам объявлений
+- По ключевым словам
+- По дням
+
+**Структура данных**:
+```python
+{
+    "date": "2025-01-01",
+    "campaign_id": "123456789",
+    "campaign_name": "Search|CPC|Almaty|Tanuki|No_Brand|Keywords",
+    "parsed_campaign": {
+        "platform": "Search",
+        "channel": "CPC", 
+        "city": "Almaty",
+        "restaurant": "Tanuki",
+        "audience_type": "No_Brand",
+        "additional": "Keywords"
+    },
+    "campaign_type": "SEARCH",
+    "adgroup_id": "987654321",
+    "impressions": 5000,
+    "clicks": 200,
+    "cost": 1500.00,
+    "conversions": 15,
+    "conversion_value": 4200.00,
+    "cpm": 300.00,
+    "cpc": 7.50,
+    "ctr": 4.00,
+    "campaign_type_determined": "Performance", # Определяется из channel (CPC)
+    "campaign_goal": "Заказы",
+    "source": "Google search",
+    "restaurant": "Тануки",
+    "city": "Алматы",
+    "country": "Казахстан"
+}
+```
+
+#### 2.1.4 Google Sheets (Промокоды)
+**Источник данных**: Google Sheets API
+**Библиотека**: `gspread` или `google-api-python-client`
+
+**Импортируемые данные**:
+- Промокод
+- Номер заказа
+- Дата заказа
+- Сумма заказа
+- Ресторан
+- Страна
+- Источник промокода
+
+**Структура данных**:
+```python
+{
+    "promo_code": "TANUKI20",
+    "order_id": "ORD123456",
+    "transaction_id": "TXN001",  # Для дедупликации с GA4
+    "order_date": "2025-01-01",
+    "order_amount": 1500.00,
+    "restaurant": "Тануки",
+    "country": "Казахстан",
+    "promo_source": "facebook_ads"
+}
+```
+
+#### 2.1.5 AppsFlyer API
+**Источник данных**: AppsFlyer Reporting API
+**Библиотека**: `requests` (AppsFlyer не имеет официальной Python SDK)
+
+**Импортируемые метрики**:
+- App installs (установки приложений)
+- In-app purchases (покупки в приложении)
+- Retention rates (удержание)
+- LTV (Lifetime Value)
+
+**Структура данных**:
+```python
+{
+    "date": "2025-01-01",
+    "media_source": "facebook",
+    "campaign": "tanuki_kz_app_install",
+    "installs": 50,
+    "cost_per_install": 20.00,
+    "purchases": 15,
+    "revenue": 4500.00,
+    "ltv_day_7": 150.00
+}
+```
+
+### 2.2 Система дедупликации
+
+#### 2.2.1 Дедупликация заказов GA4 и промокодов
+**Алгоритм**:
+1. Сопоставление по `transaction_id` (GA4) = `transaction_id` (Google Sheets)
+2. При совпадении - помечать заказ как "промокодный"
+3. Исключать дублирование в итоговой отчетности
+
+**Реализация**:
+```python
+def deduplicate_orders(ga4_data, promo_data):
+    promo_transactions = {item['transaction_id'] for item in promo_data}
+    
+    for transaction in ga4_data:
+        if transaction['transaction_id'] in promo_transactions:
+            transaction['is_promo_order'] = True
+            transaction['attribution_source'] = 'promo_code'
+        else:
+            transaction['is_promo_order'] = False
+            transaction['attribution_source'] = 'utm_attribution'
+    
+    return ga4_data
+```
+
+### 2.3 Маппинг UTM-меток и промокодов на типы кампаний
+
+#### 2.3.1 Справочник типов кампаний
+Основываясь на вашем медиаплане:
+
+**Типы кампаний**:
+- `Awareness` - Медийные кампании
+- `Performance` - Перформансные кампании
+
+**Цели кампаний**:
+- `Охват/Узнаваемость`
+- `Сообщения`
+- `Заказы`
+- `Установки приложения`
+- `HR/Сообщения`
+
+**Источники**:
+- `Google GDN` - Google Display Network
+- `Google search` - Google Search Ads
+- `Google Бренд` - Google Brand campaigns
+- `APP Google` - Google App campaigns
+- `Мета` - Meta (Facebook/Instagram)
+- `Мета APP` - Meta App Install campaigns
+
+#### 2.3.2 Правила маппинга на основе реальной структуры именования
+
+**Структура именования кампаний**:
+`{Platform}|{Channel}|{City}|{Restaurant}|{AudienceType}|{Additional}`
+
+**Парсер названий кампаний**:
+```python
+import re
+from typing import Dict, Optional
+
+def parse_campaign_name(campaign_name: str) -> Dict[str, str]:
+    """
+    Парсит название кампании по структуре:
+    Platform|Channel|City|Restaurant|AudienceType|Additional
+    
+    Примеры:
+    - "Instagram | CPM | Almaty | Bella | Interests | День Рождения"
+    - "Facebook | CPС | Almaty | Bella | Interests | Промокод недели Margo1"
+    - "Search|CPC|Almaty|Tanuki|No_Brand"
+    """
+    # Разделяем по "|" и очищаем пробелы
+    parts = [part.strip() for part in campaign_name.split('|')]
+    
+    parsed = {
+        'platform': parts[0] if len(parts) > 0 else '',
+        'channel': parts[1] if len(parts) > 1 else '',
+        'city': parts[2] if len(parts) > 2 else '',
+        'restaurant': parts[3] if len(parts) > 3 else '',
+        'audience_type': parts[4] if len(parts) > 4 else '',
+        'additional': ' | '.join(parts[5:]) if len(parts) > 5 else ''
+    }
+    
+    return parsed
+
+CAMPAIGN_MAPPING = {
+    # Определение типа кампании по Channel
+    'channel_to_type': {
+        'CPC': 'Performance',  # Все что Performance - CPC
+        'CPM': 'Awareness',    # Все что Awareness - CPM  
+        'CPA': 'Performance'
+    },
+    
+    # Определение цели по Channel и AudienceType
+    'goal_mapping': {
+        'Performance': {
+            'default': 'Заказы',
+            'patterns': {
+                r'(app|install|mobile)': 'Установки приложения',
+                r'(hr|recruit|job)': 'HR/Сообщения',
+                r'(message|lead|contact)': 'Сообщения'
+            }
+        },
+        'Awareness': {
+            'default': 'Охват/Узнаваемость',
+            'patterns': {
+                r'(message|lead|contact)': 'Сообщения'
+            }
+        }
+    },
+    
+    # Маппинг платформ на источники
+    'platform_to_source': {
+        'Facebook': 'Мета',
+        'Instagram': 'Мета', 
+        'Search': 'Google search',
+        'Network': 'Google GDN',
+        'YouTube': 'Google GDN'
+    },
+    
+    # Маппинг городов на страны
+    'city_to_country': {
+        'Almaty': 'Казахстан',
+        'Astana': 'Казахстан', 
+        'Nur-Sultan': 'Казахстан',
+        'Shymkent': 'Казахстан',
+        'Tashkent': 'Узбекистан',
+        'Samarkand': 'Узбекистан',
+        'Bukhara': 'Узбекистан',
+        'Fergana': 'Узбекистан'
+    },
+    
+    # Маппинг городов
+    'city_mapping': {
+        'Almaty': 'Алматы',
+        'Astana': 'Астана',
+        'Tashkent': 'Ташкент',
+        'Samarkand': 'Самарканд'
+    },
+    
+    # Маппинг ресторанов
+    'restaurant_mapping': {
+        'Tanuki': 'Тануки',
+        'Kaspiika': 'Каспийка', 
+        'Bella': 'Белла'
+    }
+}
+
+def determine_campaign_type_and_goal(parsed_campaign: Dict[str, str], 
+                                   meta_objective: Optional[str] = None) -> Dict[str, str]:
+    """
+    Определяет тип кампании и цель на основе разобранного названия
+    """
+    channel = parsed_campaign.get('channel', '').upper()
+    audience_type = parsed_campaign.get('audience_type', '')
+    additional = parsed_campaign.get('additional', '')
+    
+    # Определяем тип кампании по каналу
+    campaign_type = CAMPAIGN_MAPPING['channel_to_type'].get(channel, 'Performance')
+    
+    # Для Meta кампаний также используем objective
+    if meta_objective:
+        if meta_objective == 'OUTCOME_AWARENESS':
+            campaign_type = 'Awareness'
+        elif meta_objective == 'OUTCOME_SALES':
+            campaign_type = 'Performance'
+    
+    # Определяем цель
+    goal_config = CAMPAIGN_MAPPING['goal_mapping'][campaign_type]
+    goal = goal_config['default']
+    
+    # Проверяем паттерны для специальных целей
+    text_to_check = f"{audience_type} {additional}".lower()
+    for pattern, special_goal in goal_config['patterns'].items():
+        if re.search(pattern, text_to_check):
+            goal = special_goal
+            break
+    
+    return {
+        'type': campaign_type,
+        'goal': goal,
+        'source': CAMPAIGN_MAPPING['platform_to_source'].get(
+            parsed_campaign.get('platform', ''), 'Неизвестно'
+        ),
+        'city': CAMPAIGN_MAPPING['city_mapping'].get(
+            parsed_campaign.get('city', ''), parsed_campaign.get('city', '')
+        ),
+        'country': CAMPAIGN_MAPPING['city_to_country'].get(
+            parsed_campaign.get('city', ''), 'Неизвестно'
+        ),
+        'restaurant': CAMPAIGN_MAPPING['restaurant_mapping'].get(
+            parsed_campaign.get('restaurant', ''), parsed_campaign.get('restaurant', '')
+        )
+    }
+```
+
+### 2.6 Пример интеграции с медиапланом (обновленная структура)
+
+С учетом новой структуры именования кампаний, медиаплан будет адаптирован:
+
+**Было (старый формат)**:
+```
+Тип: Awareness, Цель: Охват/Узнаваемость, Ресторан: Тануки, Страна: Казахстан, Источник: Google GDN
+```
+
+**Стало (новый формат с парсингом)**:
+```
+Platform: Instagram, Channel: CPM, City: Almaty, Restaurant: Bella, Type: Awareness, Goal: Охват/Узнаваемость
+```
+
+**Функция сопоставления медиаплана с фактическими кампаниями**:
+```python
+def match_campaign_to_media_plan(campaign_data: dict, media_plans: list) -> dict:
+    """
+    Сопоставляет кампанию с записью в медиаплане
+    """
+    campaign_restaurant = campaign_data['restaurant']
+    campaign_country = campaign_data['country'] 
+    campaign_type = campaign_data['campaign_type']
+    campaign_goal = campaign_data['campaign_goal']
+    campaign_source = campaign_data['source']
+    campaign_month = campaign_data['date'].strftime('%Y-%m-01')
+    
+    # Ищем соответствующую запись в медиаплане
+    for plan in media_plans:
+        if (plan['month'] == campaign_month and
+            plan['restaurant'] == campaign_restaurant and
+            plan['country'] == campaign_country and 
+            plan['campaign_type'] == campaign_type and
+            plan['goal'] == campaign_goal and
+            plan['source'] == campaign_source):
+            
+            return {
+                'media_plan_id': plan['id'],
+                'planned_budget': plan['planned_budget'],
+                'planned_impressions': plan['planned_impressions'],
+                'variance_budget': campaign_data['spend'] - plan['planned_budget'],
+                'variance_impressions': campaign_data['impressions'] - plan['planned_impressions']
+            }
+    
+    return {'media_plan_id': None, 'error': 'No matching media plan found'}
+```
+
+#### 2.4.1 Основные таблицы
+
+**campaigns** - Справочник кампаний
+```sql
+CREATE TABLE campaigns (
+    id SERIAL PRIMARY KEY,
+    external_id VARCHAR(255) NOT NULL,
+    name VARCHAR(500) NOT NULL,
+    
+    -- Parsed campaign structure
+    platform VARCHAR(50), -- Instagram, Facebook, Search, Network, YouTube
+    channel VARCHAR(10), -- CPC, CPM, CPA  
+    city VARCHAR(100), -- Almaty, Astana, Tashkent
+    restaurant VARCHAR(100) NOT NULL, -- Tanuki, Kaspiika, Bella
+    audience_type VARCHAR(100), -- Brand, No_Brand, Interests, Remarketing
+    additional_info TEXT, -- День Рождения, Промокод недели Margo1
+    
+    -- Determined campaign attributes  
+    type VARCHAR(50) NOT NULL, -- 'Awareness', 'Performance'
+    goal VARCHAR(100) NOT NULL, -- 'Заказы', 'Охват/Узнаваемость' и т.д.
+    source VARCHAR(100) NOT NULL, -- 'Мета', 'Google search' и т.д.
+    country VARCHAR(100) NOT NULL, -- 'Казахстан', 'Узбекистан'
+    
+    -- Meta-specific fields
+    meta_objective VARCHAR(50), -- OUTCOME_AWARENESS, OUTCOME_SALES
+    account_id VARCHAR(100),
+    status VARCHAR(20),
+    daily_budget DECIMAL(10,2),
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    UNIQUE(external_id, source)
+);
+
+-- Индексы для быстрого поиска
+CREATE INDEX idx_campaigns_restaurant_country ON campaigns(restaurant, country);
+CREATE INDEX idx_campaigns_type_goal ON campaigns(type, goal);
+CREATE INDEX idx_campaigns_platform_channel ON campaigns(platform, channel);
+```
+
+**daily_metrics** - Ежедневные метрики
+```sql
+CREATE TABLE daily_metrics (
+    id SERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    campaign_id INTEGER REFERENCES campaigns(id),
+    source VARCHAR(100) NOT NULL,
+    
+    -- Основные метрики
+    impressions BIGINT DEFAULT 0,
+    clicks INTEGER DEFAULT 0,
+    spend DECIMAL(10,2) DEFAULT 0,
+    reach BIGINT DEFAULT 0,
+    
+    -- Конверсии
+    messages INTEGER DEFAULT 0,
+    orders INTEGER DEFAULT 0,
+    app_installs INTEGER DEFAULT 0,
+    activations INTEGER DEFAULT 0,
+    
+    -- Доходы
+    revenue DECIMAL(10,2) DEFAULT 0,
+    promo_revenue DECIMAL(10,2) DEFAULT 0,
+    
+    -- Вычисляемые метрики
+    cpm DECIMAL(8,3) DEFAULT 0,
+    cpc DECIMAL(8,3) DEFAULT 0,
+    ctr DECIMAL(5,2) DEFAULT 0,
+    cpa DECIMAL(8,2) DEFAULT 0,
+    cpo DECIMAL(8,2) DEFAULT 0,
+    drr DECIMAL(5,2) DEFAULT 0, -- ДРР (доля рекламных расходов)
+    
+    raw_data JSONB, -- Для хранения оригинальных данных
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**media_plan** - Медиаплан
+```sql
+CREATE TABLE media_plan (
+    id SERIAL PRIMARY KEY,
+    month DATE NOT NULL,
+    campaign_type VARCHAR(50) NOT NULL,
+    goal VARCHAR(100) NOT NULL,
+    restaurant VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    source VARCHAR(100) NOT NULL,
+    targeting VARCHAR(200),
+    planned_budget DECIMAL(10,2) NOT NULL,
+    ak_budget DECIMAL(10,2), -- Агентское комиссионное вознаграждение
+    
+    -- Плановые метрики
+    planned_impressions BIGINT,
+    planned_clicks INTEGER,
+    planned_orders INTEGER,
+    planned_installs INTEGER,
+    planned_messages INTEGER,
+    planned_revenue DECIMAL(10,2),
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**promo_orders** - Заказы по промокодам
+```sql
+CREATE TABLE promo_orders (
+    id SERIAL PRIMARY KEY,
+    promo_code VARCHAR(100) NOT NULL,
+    order_id VARCHAR(100) NOT NULL,
+    transaction_id VARCHAR(100) UNIQUE, -- Для дедупликации с GA4
+    order_date DATE NOT NULL,
+    order_amount DECIMAL(10,2) NOT NULL,
+    restaurant VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    promo_source VARCHAR(200), -- Источник промокода
+    campaign_id INTEGER REFERENCES campaigns(id),
+    is_processed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 2.5 ETL процессы (Apache Airflow)
+
+#### 2.5.1 DAG структура
+```python
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+from datetime import datetime, timedelta
+
+default_args = {
+    'owner': 'analytics-team',
+    'depends_on_past': False,
+    'start_date': datetime(2025, 1, 1),
+    'email_on_failure': True,
+    'email_on_retry': False,
+    'retries': 3,
+    'retry_delay': timedelta(minutes=5)
+}
+
+dag = DAG(
+    'advertising_data_pipeline',
+    default_args=default_args,
+    description='Import advertising data from all sources',
+    schedule_interval='0 6 * * *',  # Каждый день в 6:00
+    catchup=False
+)
+
+# Задачи импорта
+import_meta = PythonOperator(
+    task_id='import_meta_data',
+    python_callable=import_meta_data,
+    dag=dag
+)
+
+import_ga4 = PythonOperator(
+    task_id='import_ga4_data',
+    python_callable=import_ga4_data,
+    dag=dag
+)
+
+import_google_ads = PythonOperator(
+    task_id='import_google_ads_data',
+    python_callable=import_google_ads_data,
+    dag=dag
+)
+
+import_promo_codes = PythonOperator(
+    task_id='import_promo_codes',
+    python_callable=import_promo_codes,
+    dag=dag
+)
+
+import_appsflyer = PythonOperator(
+    task_id='import_appsflyer_data',
+    python_callable=import_appsflyer_data,
+    dag=dag
+)
+
+# Обработка данных
+deduplicate_orders = PythonOperator(
+    task_id='deduplicate_orders',
+    python_callable=deduplicate_orders_task,
+    dag=dag
+)
+
+calculate_metrics = PythonOperator(
+    task_id='calculate_metrics',
+    python_callable=calculate_metrics_task,
+    dag=dag
+)
+
+# Зависимости
+[import_meta, import_ga4, import_google_ads, import_promo_codes, import_appsflyer] >> deduplicate_orders >> calculate_metrics
+```
+
+#### 2.5.2 Функции импорта
+
+**Meta API Import**:
+```python
+from facebook_business.api import FacebookAdsApi
+from facebook_business.adobjects.campaign import Campaign
+from facebook_business.adobjects.adaccount import AdAccount
+
+def import_meta_data(execution_date, **context):
+    FacebookAdsApi.init(
+        app_id=settings.META_APP_ID,
+        app_secret=settings.META_APP_SECRET,
+        access_token=settings.META_ACCESS_TOKEN
+    )
+    
+    # Поля для кампаний
+    campaign_fields = [
+        'id',
+        'name', 
+        'status',
+        'objective',
+        'daily_budget',
+        'account_id',
+        'start_time',
+        'stop_time'
+    ]
+    
+    # Поля для статистики
+    insights_fields = [
+        'impressions',
+        'clicks', 
+        'spend',
+        'reach',
+        'frequency',
+        'cpm',
+        'cpc',
+        'ctr',
+        'campaign_id',
+        'campaign_name',
+        'adset_id',
+        'adset_name'
+    ]
+    
+    params = {
+        'time_range': {
+            'since': execution_date.strftime('%Y-%m-%d'),
+            'until': execution_date.strftime('%Y-%m-%d')
+        },
+        'level': 'campaign',
+        'breakdowns': []
+    }
+    
+    account = AdAccount(f"act_{settings.META_ACCOUNT_ID}")
+    campaigns = account.get_campaigns(fields=campaign_fields)
+    
+    for campaign in campaigns:
+        # Парсим название кампании
+        parsed_campaign = parse_campaign_name(campaign['name'])
+        
+        # Определяем тип и цель кампании
+        campaign_meta = determine_campaign_type_and_goal(
+            parsed_campaign, 
+            campaign.get('objective')
+        )
+        
+        # Получаем статистику
+        insights = campaign.get_insights(
+            fields=insights_fields,
+            params=params
+        )
+        
+        for insight in insights:
+            # Подготавливаем данные для сохранения
+            campaign_data = {
+                'date': execution_date.date(),
+                'campaign_id': campaign['id'],
+                'campaign_name': campaign['name'],
+                'parsed_campaign': parsed_campaign,
+                'account_id': campaign['account_id'],
+                'objective': campaign.get('objective'),
+                'status': campaign['status'],
+                'daily_budget': campaign.get('daily_budget'),
+                'impressions': insight.get('impressions', 0),
+                'clicks': insight.get('clicks', 0),
+                'spend': float(insight.get('spend', 0)),
+                'reach': insight.get('reach', 0),
+                'cpm': float(insight.get('cpm', 0)),
+                'cpc': float(insight.get('cpc', 0)),
+                'ctr': float(insight.get('ctr', 0)),
+                'campaign_type': campaign_meta['type'],
+                'campaign_goal': campaign_meta['goal'],
+                'source': campaign_meta['source'],
+                'restaurant': campaign_meta['restaurant'],
+                'city': campaign_meta['city']
+            }
+            
+            # Сохраняем в БД
+            save_daily_metrics(campaign_data)
+```
+
+**Google Analytics 4 Import**:
+```python
+from google.analytics.data_v1beta import BetaAnalyticsDataClient
+from google.analytics.data_v1beta.types import (
+    DateRange,
+    Dimension,
+    Metric,
+    RunReportRequest,
+)
+
+def import_ga4_data(execution_date, **context):
+    client = BetaAnalyticsDataClient()
+    
+    request = RunReportRequest(
+        property=f"properties/{settings.GA4_PROPERTY_ID}",
+        dimensions=[
+            Dimension(name="date"),
+            Dimension(name="sessionSourceMedium"),
+            Dimension(name="sessionCampaignName"),
+            Dimension(name="transactionId"),
+        ],
+        metrics=[
+            Metric(name="sessions"),
+            Metric(name="conversions"),
+            Metric(name="purchaseRevenue"),
+        ],
+        date_ranges=[DateRange(
+            start_date=execution_date.strftime('%Y-%m-%d'),
+            end_date=execution_date.strftime('%Y-%m-%d')
+        )],
+    )
+    
+    response = client.run_report(request)
+    # Обработка и сохранение данных
+    # ...
+```
+
+## 3. Дашборды и отчетность
+
+### 3.1 Перформансные дашборды
+
+**Основные метрики**:
+- Клики / Показы / Расходы
+- Доход / Доход с промокодами
+- ДРР (Доля рекламных расходов) = Расходы / Общий доход
+- CPO (Cost Per Order) = Расходы / Количество заказов
+- CPA (Cost Per Acquisition):
+  - Установки приложений = Расходы / Установки
+  - Сообщения = Расходы / Сообщения
+
+**Группировки**:
+- По ресторанам (Тануки, Каспийка, Белла)
+- По странам (Казахстан, Узбекистан)
+- По источникам (Google, Meta, AppsFlyer)
+- По типам кампаний
+- По временным периодам
+
+### 3.2 Медийные дашборды
+
+**Основные метрики**:
+- Показы / Клики / Охваты / Вовлеченность
+- Сообщения
+- CPM (Cost Per Mille)
+- CPA (Cost Per Action)
+- ДРР (где применимо)
+
+### 3.3 План-факт дашборды
+
+**Сравнение**:
+- Плановый бюджет vs Фактические расходы
+- Плановые метрики vs Фактические метрики
+- Отклонения в %
+- Прогноз выполнения плана на месяц
+
+**Визуализация**:
+- Таблицы с отклонениями
+- Графики выполнения плана
+- Heat maps по эффективности
+
+## 4. Технические требования
+
+### 4.1 API подключения
+
+**Необходимые разрешения и токены**:
+
+1. **Meta Business API**:
+   - Business Manager Access
+   - Ads Management Standard Access
+   - Требуемые разрешения: `ads_read`, `business_management`
+
+2. **Google Analytics 4**:
+   - Service Account с доступом к GA4 property
+   - Роль: Viewer или выше
+
+3. **Google Ads API**:
+   - Developer token
+   - OAuth 2.0 credentials
+   - Customer ID
+
+4. **Google Sheets API**:
+   - Service Account с доступом к таблице
+   - Google Sheets API enabled
+
+5. **AppsFlyer API**:
+   - API Token
+   - App ID
+
+### 4.2 Архитектура системы
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Data Sources  │    │   ETL Layer     │    │   Storage       │
+│                 │    │                 │    │                 │
+│ • Meta API      │───▶│ • Apache Airflow│───▶│ • PostgreSQL    │
+│ • Google Ads    │    │ • Data Validation│    │ • Redis Cache   │
+│ • GA4           │    │ • Deduplication │    │                 │
+│ • Google Sheets │    │ • Transformation│    │                 │
+│ • AppsFlyer     │    │ • Error Handling│    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                 │
+                       ┌─────────────────┐    ┌─────────────────┐
+                       │   API Layer     │    │ Visualization   │
+                       │                 │    │                 │
+                       │ • FastAPI       │───▶│ • Apache Superset│
+                       │ • Authentication│    │ • Custom Dashboards│
+                       │ • Rate Limiting │    │ • Export Features│
+                       │ • Caching       │    │                 │
+                       └─────────────────┘    └─────────────────┘
+```
+
+### 4.3 Развертывание (Docker Compose)
+
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: advertising_analytics
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  airflow-webserver:
+    image: apache/airflow:2.8.0
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:password@postgres/advertising_analytics
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres/advertising_analytics
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  superset:
+    image: apache/superset:latest
+    environment:
+      SUPERSET_CONFIG_PATH: /app/superset_config.py
+    ports:
+      - "8088:8088"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+```
+
+## 5. План разработки
+
+### Фаза 1 (2-3 недели): Базовая инфраструктура
+- [ ] Настройка БД и базовой архитектуры
+- [ ] Подключение к Meta API
+- [ ] Подключение к Google Analytics 4
+- [ ] Базовый ETL процесс
+
+### Фаза 2 (2-3 недели): Расширение источников данных
+- [ ] Подключение к Google Ads API
+- [ ] Интеграция с Google Sheets
+- [ ] Подключение к AppsFlyer API
+- [ ] Система дедупликации
+
+### Фаза 3 (2-3 недели): Обработка и маппинг
+- [ ] Система маппинга UTM-меток
+- [ ] Калькуляция метрик
+- [ ] Импорт медиаплана
+- [ ] План-факт анализ
+
+### Фаза 4 (2-3 недели): Дашборды и визуализация
+- [ ] Настройка Apache Superset
+- [ ] Создание перформансных дашбордов
+- [ ] Создание медийных дашбордов
+- [ ] План-факт дашборды
+
+### Фаза 5 (1-2 недели): Оптимизация и деплой
+- [ ] Оптимизация производительности
+- [ ] Мониторинг и алерты
+- [ ] Документация
+- [ ] Продакшн деплой
+
+## 6. Мониторинг и обслуживание
+
+### 6.1 Мониторинг системы
+- Airflow DAG успешность выполнения
+- API rate limits мониторинг
+- Качество данных проверки
+- Система алертов при сбоях
+
+### 6.2 Обслуживание
+- Еженедельные проверки качества данных
+- Ежемесячное обновление маппингов кампаний
+- Квартальная оптимизация производительности
+
+## 7. Риски и ограничения
+
+### 7.1 Технические риски
+- API rate limits у внешних сервисов
+- Изменения в API провайдеров
+- Задержки в получении данных
+
+### 7.2 Бизнес риски
+- Неточность атрибуции между источниками
+- Сложность дедупликации при изменении логики UTM
+
+### 7.4 Важные замечания по реализации
+
+**Проверка структуры именования Google Ads**:
+- Необходимо проверить, используется ли единая структура именования `Platform|Channel|City|Restaurant|AudienceType` в Google Ads
+- Если структура отличается, создать отдельный парсер для Google Ads кампаний
+- Возможно потребуется fallback логика для кампаний со старой структурой именования
+
+**Валидация данных**:
+- Добавить проверки на корректность parsed campaign данных
+- Логирование кампаний, которые не удалось распарсить
+- Система алертов при появлении новых форматов названий кампаний
+
+**Миграция существующих данных**:
+- При внедрении системы может потребоваться миграция исторических данных
+- Создание скриптов для ретроспективного парсинга названий кампаний
