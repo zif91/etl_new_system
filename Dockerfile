@@ -31,8 +31,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Копирование исходного кода
 COPY . .
 
-# Создание необходимых директорий
-RUN mkdir -p /app/logs /app/data/comparisons /app/data/reports
+# Создание необходимых директорий для логов Airflow
+RUN mkdir -p /app/logs /app/logs/scheduler /app/logs/webserver /app/logs/dag_processor \
+    /app/data/comparisons /app/data/reports
 
 # Установка прав доступа
 RUN chown -R airflow:airflow /app
