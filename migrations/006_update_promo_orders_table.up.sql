@@ -9,8 +9,10 @@ ALTER TABLE promo_orders
     ADD COLUMN IF NOT EXISTS is_processed BOOLEAN DEFAULT FALSE;
 
 -- Обновляем ограничение уникальности
-DROP INDEX IF EXISTS promo_orders_order_id_key;
-CREATE UNIQUE INDEX promo_orders_transaction_id_key ON promo_orders(transaction_id);
+-- Сначала удаляем ограничение уникальности, если оно существует
+ALTER TABLE promo_orders DROP CONSTRAINT IF EXISTS promo_orders_order_id_key;
+-- Затем создаем новый индекс для transaction_id
+CREATE UNIQUE INDEX IF NOT EXISTS promo_orders_transaction_id_key ON promo_orders(transaction_id);
 
 -- Переименовываем поле revenue в order_amount для соответствия PRD
 ALTER TABLE promo_orders RENAME COLUMN revenue TO order_amount;
