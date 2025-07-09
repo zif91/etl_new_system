@@ -14,10 +14,18 @@ RUN useradd --create-home --shell /bin/bash airflow
 # Установка рабочей директории
 WORKDIR /app
 
+# Установка Airflow версии 2.7.3 с constraints
+ARG AIRFLOW_VERSION=2.7.3
+ARG PYTHON_VERSION=3.11
+ARG CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
+
+# Установка Apache Airflow с constraints для быстрой установки
+RUN pip install --no-cache-dir "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
+
 # Копирование файла зависимостей
 COPY requirements.txt .
 
-# Установка Python зависимостей
+# Установка дополнительных зависимостей
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копирование исходного кода
