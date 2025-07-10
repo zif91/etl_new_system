@@ -42,7 +42,7 @@ def import_ga4_data(start_date: str, end_date: str) -> List[Dict]:
     return result
 
 
-def import_and_store_ga4_data(start_date: str, end_date: str) -> List[Dict]:
+def import_and_store_ga4_metrics(start_date: str, end_date: str) -> List[Dict]:
     """
     Fetch GA4 data for the date range and persist to database.
 
