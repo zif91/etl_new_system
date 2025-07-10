@@ -163,3 +163,16 @@ class PromoCodeImporter:
         except Exception as e:
             logger.error(f"Error importing promo codes: {e}")
             raise
+
+def import_promo_codes(worksheet_name: str = 'Promo Codes') -> Dict[str, Any]:
+    """
+    Global function to import promo codes for use in Airflow DAG.
+    
+    Args:
+        worksheet_name: Name of the worksheet to import from
+        
+    Returns:
+        Dictionary with import statistics
+    """
+    importer = PromoCodeImporter()
+    return importer.import_promo_codes(worksheet_name)
