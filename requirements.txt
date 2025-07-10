@@ -10,6 +10,9 @@ facebook-business>=16.0.0
 # Google Ads API
 google-ads>=20.0.0
 
+# Google Analytics Data API
+google-analytics-data>=0.18.0
+
 # Дополнительные зависимости для аналитики
 pandas>=1.5.0
 numpy>=1.24.0
