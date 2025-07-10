@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.email import send_email
-from airflow.models.baseoperator import chain
+from airflow.utils.helpers import chain
 from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.operators.dummy import DummyOperator
 from airflow.utils.task_group import TaskGroup
@@ -29,9 +29,9 @@ import os
 # Добавляем путь к проекту в sys.path для корректного импорта
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.meta_importer import import_meta_data
-from src.ga4_importer import import_ga4_data
-from src.google_ads_importer import import_google_ads_data
+from src.meta_importer import import_meta_insights
+from src.ga4_importer import import_and_store_ga4_metrics
+from src.google_ads_importer import import_and_store_google_ads_metrics
 from src.promo_importer import import_promo_codes
 from src.appsflyer_importer import import_and_store_appsflyer_data
 from src.deduplication_process import deduplicate_orders_task
@@ -40,7 +40,7 @@ from src.report_generator import generate_reports_task
 from src.media_plan_importer import import_media_plan_task
 from src.media_plan_integrator import compare_with_media_plan_task
 from src.performance_analyzer import compare_month_to_month_task
-from src.multi_dimensional_analyzer import multi_dimensional_analysis_task # Добавляем импорт
+from src.multi_dimensional_analyzer import multi_dimensional_analysis_task
 
 # Параметры по умолчанию для задач
 default_args = {
@@ -168,7 +168,7 @@ with TaskGroup(group_id="data_import", dag=dag) as import_group:
     # 1. Meta (Facebook/Instagram) API
     import_meta = PythonOperator(
         task_id='import_meta_data',
-        python_callable=import_meta_data,
+        python_callable=import_meta_insights,
         provide_context=True,
         op_kwargs={'execution_date': '{{ ds }}'},  # Передаем дату запуска
         dag=dag,
@@ -188,7 +188,7 @@ with TaskGroup(group_id="data_import", dag=dag) as import_group:
     # 2. Google Analytics 4
     import_ga4 = PythonOperator(
         task_id='import_ga4_data',
-        python_callable=import_ga4_data,
+        python_callable=import_and_store_ga4_metrics,
         provide_context=True,
         op_kwargs={'execution_date': '{{ ds }}'},
         dag=dag,
@@ -208,7 +208,7 @@ with TaskGroup(group_id="data_import", dag=dag) as import_group:
     # 3. Google Ads
     import_google_ads = PythonOperator(
         task_id='import_google_ads_data',
-        python_callable=import_google_ads_data,
+        python_callable=import_and_store_google_ads_metrics,
         provide_context=True,
         op_kwargs={'execution_date': '{{ ds }}'},
         dag=dag,

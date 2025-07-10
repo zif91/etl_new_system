@@ -12,6 +12,8 @@ node_modules/
 # Environment variables
 .env
 *.env
+.env.prod
+.env.local
 
 # Editor directories and files
 .idea
@@ -47,7 +49,18 @@ logs/
 # Файлы с секретными данными
 .env
 *.env
+.env.prod
+.env.local
 secrets.toml
+
+# Credentials и ключи API
+credentials/
+*.json
+*.yaml
+*.yml
+google-ads.yaml
+client_secret_*.json
+service-account-*.json
 
 # Отчеты и артефакты сборки
 build/
