@@ -22,3 +22,4 @@ redis>=4.0.0
 
 # Для логирования и мониторинга
 structlog>=22.3.0
+google-analytics-data>=0.18.0
