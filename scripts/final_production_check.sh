@@ -45,19 +45,19 @@ fi
 echo ""
 echo "⚙️  Checking configuration files..."
 
-if [ -f "/root/etl_new_system/.env.prod" ]; then
+if [ -f "/opt/etl-analytics/.env.prod" ]; then
     echo "✅ .env.prod exists"
 else
     echo "❌ .env.prod missing"
 fi
 
-if [ -f "/root/etl_new_system/credentials/google-ads.yaml" ]; then
+if [ -f "/opt/etl-analytics/credentials/google-ads.yaml" ]; then
     echo "✅ google-ads.yaml exists"
 else
     echo "❌ google-ads.yaml missing"
 fi
 
-if [ -f "/root/etl_new_system/credentials/tanukiasia-be46d5499187.json" ]; then
+if [ -f "/opt/etl-analytics/credentials/tanukiasia-be46d5499187.json" ]; then
     echo "✅ Google service account exists"
 else
     echo "❌ Google service account missing"
@@ -86,7 +86,7 @@ fi
 # Проверка импортов в DAG'ах
 echo ""
 echo "🔗 Checking for any remaining stubs in DAGs..."
-STUB_COUNT=$(grep -r "def import_.*_data" /root/etl_new_system/dags/ 2>/dev/null | wc -l)
+STUB_COUNT=$(grep -r "def import_.*_data" /opt/etl-analytics/dags/ 2>/dev/null | wc -l)
 if [ "$STUB_COUNT" -eq 0 ]; then
     echo "✅ No function stubs found in DAGs"
 else
@@ -96,13 +96,13 @@ fi
 # Проверка API ключей
 echo ""
 echo "🔑 Checking API credentials format..."
-if grep -q "EAAeE" /root/etl_new_system/.env.prod 2>/dev/null; then
+if grep -q "EAAeE" /opt/etl-analytics/.env.prod 2>/dev/null; then
     echo "✅ Facebook token format looks valid"
 else
     echo "❌ Facebook token missing or invalid format"
 fi
 
-if grep -q "1//09" /root/etl_new_system/.env.prod 2>/dev/null; then
+if grep -q "1//09" /opt/etl-analytics/.env.prod 2>/dev/null; then
     echo "✅ Google refresh token format looks valid"
 else
     echo "❌ Google refresh token missing or invalid format"

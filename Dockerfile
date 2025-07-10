@@ -49,11 +49,8 @@ ENV AIRFLOW__CORE__LOAD_EXAMPLES=False
 ENV AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
 ENV AIRFLOW__CORE__ENABLE_XCOM_PICKLING=True
 
-# Инициализация базы данных Airflow
-RUN airflow db init
-
 # Экспорт портов
 EXPOSE 8080
 
 # Команда по умолчанию
-CMD ["bash", "-c", "airflow webserver --port 8080 & airflow scheduler"]
+CMD ["bash", "-c", "airflow db migrate && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true && airflow webserver --port 8080 & airflow scheduler"]

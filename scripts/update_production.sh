@@ -6,7 +6,7 @@
 echo "🚀 Starting production deployment update..."
 
 # Переходим в директорию проекта
-cd /root/etl_new_system || {
+cd /opt/etl-analytics || {
     echo "❌ Project directory not found!"
     exit 1
 }
@@ -20,7 +20,10 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "🛑 Stopping current containers..."
-docker compose down
+docker compose down --remove-orphans
+
+echo "🧹 Cleaning up old containers and networks..."
+docker system prune -f
 
 echo "🔄 Rebuilding containers with latest code..."
 docker compose build --no-cache
