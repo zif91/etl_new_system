@@ -14,12 +14,17 @@ ALTER TABLE promo_orders DROP CONSTRAINT IF EXISTS promo_orders_order_id_key;
 -- Затем создаем новый индекс для transaction_id
 CREATE UNIQUE INDEX IF NOT EXISTS promo_orders_transaction_id_key ON promo_orders(transaction_id);
 
--- Переименовываем поле revenue в order_amount для соответствия PRD
-ALTER TABLE promo_orders RENAME COLUMN revenue TO order_amount;
+-- Переименовываем поле revenue в order_amount для соответствия PRD (если колонка существует)
+DO $$
+BEGIN
+    IF EXISTS(SELECT * FROM information_schema.columns WHERE table_name='promo_orders' AND column_name='revenue') THEN
+        ALTER TABLE promo_orders RENAME COLUMN revenue TO order_amount;
+    END IF;
+END $$;
 
 -- Создаем индексы для оптимизации запросов
 CREATE INDEX IF NOT EXISTS idx_promo_orders_order_date ON promo_orders(order_date);
-CREATE INDEX IF NOT EXISTS idx_promo_orders_restaurant ON promo_orders(restaurant);
 CREATE INDEX IF NOT EXISTS idx_promo_orders_country ON promo_orders(country);
+CREATE INDEX IF NOT EXISTS idx_promo_orders_promo_source ON promo_orders(promo_source);
 
 COMMIT;
